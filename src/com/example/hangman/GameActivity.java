@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+// this is the main game activity
 public class GameActivity extends Activity {
 	TextView hangmanText;
 	TextView guessedText;
