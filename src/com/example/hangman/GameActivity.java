@@ -20,35 +20,70 @@ public class GameActivity extends Activity {
 	String word;
 	String obscuredWord;
 	
+	String[] words;
+	
 	int incorrectGuessCount;
+	int score;
+	int game;
 	
 	//Called when the game is over. Transitions back to EnterWord Screen
 	protected void endGame() {
 		Intent goToStartActivity = new Intent(GameActivity.this, EnterWordActivity.class);
+		goToStartActivity.putExtra("score", score);
 		startActivity(goToStartActivity);
+	}
+	
+	protected void updateScore(boolean guessedWord) {
+		if(guessedWord) {
+			score += 10 + obscuredWord.length();
+		}
+		else {
+			int count = 0;
+			for(int i=0; i<obscuredWord.length(); i++) {
+				if(obscuredWord.charAt(i) != '*') {
+					count++;
+				}
+			}
+			score+=count;
+		}
+		System.out.println(score);
+	}
+	
+	protected void resetGame() {
+		if(game == 3) {
+			endGame();
+		}else {
+			word = words[game];
+			obscuredWord = "";
+			for(int i = 0; i<word.length(); i++)
+			{
+				obscuredWord += '*';
+			}
+			
+			hangmanText.setText(obscuredWord);
+			guessedText.setText("");
+			incorrectGuessCount = 0;
+		}
 	}
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
-		incorrectGuessCount=0;
+		score = 0;
+		game=0;
 		
 		Intent intent = getIntent();
-		word = intent.getStringExtra("word");
+		words = intent.getStringArrayExtra("words");
 		
 		obscuredWord = new String();
-		for(int i = 0; i<word.length(); i++)
-		{
-			obscuredWord += '*';
-		}
 		
 		hangmanText = (TextView) this.findViewById(R.id.hangmantext);
 		guessField = (EditText) this.findViewById(R.id.textBox);
 		guessButton = (Button) this.findViewById(R.id.guessButton);
 		guessedText = (TextView) this.findViewById(R.id.guessedLetters);
 		
-		hangmanText.setText(obscuredWord);
+		resetGame();
 		
 		guessButton.setOnClickListener(new View.OnClickListener() {
 			
@@ -85,7 +120,9 @@ public class GameActivity extends Activity {
 						if(obscuredWord.equals(word)) {
 							Toast toast = Toast.makeText(context, "You won", Toast.LENGTH_SHORT);
 							toast.show();
-							endGame();
+							game++;
+							updateScore(true);
+							resetGame();
 						}
 					}
 					else {
@@ -94,9 +131,12 @@ public class GameActivity extends Activity {
 						if(incorrectGuessCount == 7) { //Only 7 incorrect guesses are allowed
 							Toast toast = Toast.makeText(context, "You lost", Toast.LENGTH_SHORT);
 							toast.show();
-							endGame();
+							game++; 
+							updateScore(false);
+							resetGame();
+						}else {
+							guessedText.setText(alreadyGuessed);
 						}
-						guessedText.setText(alreadyGuessed);
 					}
 						
 				}
